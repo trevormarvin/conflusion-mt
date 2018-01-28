@@ -8,3 +8,6 @@ One of the visions is to build a membership tracking system that utilizes a poin
 
 Management features should be built to be accessible from a webpage interface, thus making it platform agnostic.  Software built for use on kiosk and point-of-sale equipment will be designed to run on Linux systems.
 
+This repository is put together using Pipenv and Virtual Environments.  See this to help get you started is you're not familiar with it:  http://docs.python-guide.org/en/latest/dev/virtualenvs/
+
+The 2.x version of Django is being used here, so that ends up requiring version 3 Python.  Sub modules may be written in other languages and versions of Django and Python, but the core is Django 2.x and Python 3.
