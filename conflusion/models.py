@@ -70,8 +70,31 @@ class Certifications(models.Model):
   
   comments = models.TextField(null = True)
   # comments about the particular certification
-
-
+  
+  logaccess = models.BooleanField(default = False)
+  # Whether to log access to the certification for each query.  e.g.  If the
+  # certification is access to the front door, then this could specify that
+  # a particular user requested (and presumably received) access to unlock the
+  # door.  The access request god to another table. ### WHAT TABLE HERE ###
+  
+  logfailed = models.BooleanField(default = False)
+  # If 'logaccess' is set, this will set to log failed access attempts.  These
+  # failed access attempts will be limited to where the user has an access
+  # device (like a prox card), but is not certified for the particular access.
+  # Access attempts with invalid or credentials that are not in the database
+  # are not logged as there is no user account to attribute them to.
+  
+  show = models.PositiveIntegerField(default = 0)
+  # When displaying a user's access priveleges on a particular interface, this
+  # value will act as a threshhold for which certifications will be shown.
+  # For example, when a user initially checks in and provides credential (e.g.
+  # swipes their access card), the kiosk may show what access priveleges the
+  # user has.  This will allow not showing too many priveleges in this context.
+  # Lower number are higher priority to show.  Anything at level zero would be
+  # for showing in all situations.  The main check in kiosk may show priveleges
+  # with a level of 2 or lower, for example.
+  
+  
 # --------------------------------
 '''
 This next table tracks the certifications that a particular user has.
@@ -117,7 +140,89 @@ class Certified(models.Model):
   class Meta:
     unique_together = ('cert', 'userid', 'certifier')
   
+
+# --------------------------------
+'''
+This next logs individual accesses to a certified resource
+'''
+
+class CertAccessLog(models.Model):
+  index = models.AutoField(primary_key = True)
   
+  parent = models.ForeignKey('Certifications',
+                             null = True,
+                             on_delete = models.CASCADE)
+  # the resource that the log entry is for
+  
+  timestamp = models.DateTimeField(auto_now_add = True)
+  # this automatic populating field is the time of the access log event
+  
+  userid = models.ForeignKey('Users',
+                             on_delete = models.SET_NULL)
+  # this identifies the user that requested the access
+  # (We are not relying on the 'certid' field to identify the user, as the user
+  # may not be certified and we want to log a failed access attempt.)
+  
+  certid = models.ForeignKey('Certified',
+                             on_delete = models.SET_NULL,
+                             null = True)
+  # this links back to the certification that allowed the access, null if access
+  # was denied
+  
+  quantity = models.DecimalField(null = True)
+  # for particular access logging that aims to record a quantity of something,
+  # this field records the quantity of usage to a resource
+
+
+# --------------------- Tables for Asynchronous Events ------------------------
+'''
+This next section relates to events that happen that are not tied to particular
+accesses to certified resources.  This commonly includes switches tied to doors
+or security motion sensors.
+'''
+
+class EventItems(models.Model):
+  index = models.AutoField(primary_key = True)
+  
+  eventid = CharField(max_length = 32,
+                      unique = True)
+  # this will be the short lookup code for the device reporting an event to find
+  # the appropriate entry in this table, of which will become the ForeignKey
+  # index from the EventAccessLog table
+  
+  bothedges = BooleanField(default = False)
+  # if set, this will instruct that the log should record a device triggering
+  # to the asserted state (i.e. a door opening) along with recording the device
+  # returning to the unasserted state (i.e. a door closing)
+  
+  description = CharField(max_length = 128)
+  # a description of the sensor or report
+  
+  logpurgeage = PositiveIntegerField(default = 0)
+  # if this value is non-zero, log entries older than this number of days will
+  # be automatically deleted during the cleaning and maintainance process
+  
+  ###### POSSIBLY ADD VALUES HERE ABOUT NOTIFICATIONS TO PARTICULAR USERS THAT
+  ###### WILL HAPPEN IF THESE EVENTS HAPPEN OUTSIDE PARTICULAR TIME WINDOWS.
+  ###### THIS GOES TOWARDS THE END OF MAKING A FULL SECURITY SYSTEM
+  
+
+class EventAccessLog(models.Model):
+  index = models.AutoField(primary_key = True)
+  
+  eventid = ForeignKey('EventItems',
+                       on_delete = models.CASCADE)
+  # reference to the event that occurred
+  
+  timestamp = models.DateTimeField(auto_now_add = True)
+  # this automatic populating field is the time of event
+  
+  state = PositiveSmallIntegerField(default = 0)
+  # For events that have multiple states that they could be in, this will store
+  # that state.  In the case of a door, it would be '1' for opening and '0' for
+  # closing.
+
+
 # --------------------- Tables for Controlling Access Cards -------------------
 
 '''
