@@ -28,7 +28,7 @@ class Certifications(models.Model):
                           unique = True)
   # this is the name of the resource or skill that is being certified
   
-  parent = models.ForeignKey('self',
+  parent = models.ForeignKey(self,
                              null = True,
                              on_delete = models.CASCADE)
   # If this certification is a subset or under another certification, this
@@ -39,11 +39,17 @@ class Certifications(models.Model):
   comments = models.TextField(null = True)
   # comments about the particular certification
   
+  ml_based = models.ForeignKey(Group,
+                               null = True)
+  # "Membership Level Based"  If access to a particular permission is implicitly
+  # granted by a particular membership level, then this is a refernce to the
+  # 'Group' whose membership in implicitly grants this certification.
+  
   logaccess = models.BooleanField(default = False)
   # Whether to log access to the certification for each query.  e.g.  If the
   # certification is access to the front door, then this could specify that
   # a particular user requested (and presumably received) access to unlock the
-  # door.  The access request god to another table. ### WHAT TABLE HERE ###
+  # door.  The access request goes to another table, "CertAccessLog".
   
   logfailed = models.BooleanField(default = False)
   # If 'logaccess' is set, this will set to log failed access attempts.  These
@@ -71,7 +77,7 @@ This next logs individual accesses to a certified resource
 class CertAccessLog(models.Model):
   index = models.AutoField(primary_key = True)
   
-  parent = models.ForeignKey('Certifications',
+  parent = models.ForeignKey(Certifications,
                              null = True,
                              on_delete = models.CASCADE)
   # the resource that the log entry is for
@@ -79,13 +85,13 @@ class CertAccessLog(models.Model):
   timestamp = models.DateTimeField(auto_now_add = True)
   # this automatic populating field is the time of the access log event
   
-  userid = models.ForeignKey('Users',
+  userid = models.ForeignKey(User,
                              on_delete = models.SET_NULL)
   # this identifies the user that requested the access
   # (We are not relying on the 'certid' field to identify the user, as the user
   # may not be certified and we want to log a failed access attempt.)
   
-  certid = models.ForeignKey('Certified',
+  certid = models.ForeignKey(Certified,
                              on_delete = models.SET_NULL,
                              null = True)
   # this links back to the certification that allowed the access, null if access
@@ -104,14 +110,14 @@ This next table tracks the certifications that a particular user has.
 class Certified(models.Model):
   index = models.AutoField(primary_key = True)
   
-  userid = models.ForeignKey('Users',
+  userid = models.ForeignKey(User,
                              on_delete = models.CASCADE)
   # the user with the certification
-  cert = models.ForeignKey('Certifications',
+  cert = models.ForeignKey(Certifications,
                            on_delete = models.CASCADE)
   # the certification that the user has
   
-  certby = models.ForeignKey('Users',
+  certby = models.ForeignKey(User,
                              on_delete = models.SET_NULL,
                              null = True)
   # the user that authorized the certitification
@@ -157,7 +163,7 @@ class AccessCards(models.Model):
                             unique = True)
   # unique identifier of an access card or device
   
-  userid = models.ForeignKey('Users',
+  userid = models.ForeignKey(User,
                              on_delete = models.CASCADE)
   # user that the access card belongs to
   
