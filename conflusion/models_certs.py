@@ -28,6 +28,12 @@ class Certifications(models.Model):
                           unique = True)
   # this is the name of the resource or skill that is being certified
   
+  code = models.CharField(max_length = 16,
+                          null = True,
+                          unique = True)
+  # (If it exists, it must be unique.)
+  # This is the code looked up for a particular access device
+  
   parent = models.ForeignKey(self,
                              null = True,
                              on_delete = models.CASCADE)
@@ -77,9 +83,9 @@ This next logs individual accesses to a certified resource
 class CertAccessLog(models.Model):
   index = models.AutoField(primary_key = True)
   
-  parent = models.ForeignKey(Certifications,
-                             null = True,
-                             on_delete = models.CASCADE)
+  resource = models.ForeignKey(Certifications,
+                               null = True,
+                               on_delete = models.CASCADE)
   # the resource that the log entry is for
   
   timestamp = models.DateTimeField(auto_now_add = True)
@@ -100,6 +106,9 @@ class CertAccessLog(models.Model):
   quantity = models.DecimalField(null = True)
   # for particular access logging that aims to record a quantity of something,
   # this field records the quantity of usage to a resource
+  
+  failed = models.BooleanField(default = False)
+  # if the log entry is for a failed attempt
 
 
 # --------------------------------
