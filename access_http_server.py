@@ -6,6 +6,8 @@ This file is part of the Conflusion-MT suite
 This file is intended to be launched by iNetD, but can be run as a server if
 given an argument of the port to bind to.
 
+FIRST PASS AT CODE, NOT EVEN READY FOR TESTING, PUSHED AS PART OF BACKUP
+
 '''
 
 import argparse, time, sys, os, time, socket, select, http.server
