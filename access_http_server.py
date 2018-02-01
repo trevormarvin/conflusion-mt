@@ -34,7 +34,10 @@ class handle_request(http.server.BaseHTTPRequestHandler):
     
     self.params = {}
     
-    ###### GET POST REQUEST VARS INTO self.params ######
+    postdata = self.rfile.read(int(self.headers['Content-Length']))
+    for line in postdata.readlines():
+      print(line) ##################
+      ###### GET POST REQUEST VARS INTO self.params ######
     
     return self.response()
   
@@ -226,14 +229,44 @@ from django.core.exceptions import ObjectDoesNotExist
 import django
 django.setup()
 
+'''
+From the source code of http.server, the class expects to receive:
+"class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):"
+
+This is a ref to the documentation of what it expects to see:
+https://docs.python.org/3/library/socketserver.html#socketserver.StreamRequestHandler
+which is a sub class of this:
+https://docs.python.org/3/library/socketserver.html#socketserver.BaseRequestHandler
+
+
+
+'''
 if not args.daemon:
+  ###### THIS SECTION NEEDS A LOT OF WORK
+  ###### NEED TO SHOVE STDIN/STDOUT INTO THE COMM SOCKET OF THE SERVER FUNCTION
   # assume being launched from iNetD
+  import socketserver
+  class pseudosocketclass(socketserver.StreamRequestHandler):
+    
+    def rfile(self, length):
+      sys.stdin.read(length)
+      
+    def wfile(self, data):
+      sys.stdout.write(data)
+  
+  pseudosocket = pseudosocketclass()
+  
+  handle_request(pseudosocket)
+  
+  '''
+  # this is a snippet of code that with turn stdin/stdout into a TCP socket class
   # convert the stdin/out to a TCP socket
   tcpsock = socket.fromfd(sys.stdin.fileno(), socket.AF_INET, socket.SOCK_STREAM)
   handle_request(request,
                  tcpsock.getpeername(),
                  server,
                  close_connection = True)
+  '''
   sys.exit(0)
                  
 else:
