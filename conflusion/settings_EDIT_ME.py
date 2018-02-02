@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'conflustion',
+    'conflusion',
 ]
 
 MIDDLEWARE = [
@@ -75,7 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'conflusion.wsgi.application'
 
-AUTH_USER_MODEL = 'conflustion.User'  # overrides the built in User model
+AUTH_USER_MODEL = 'conflusion.User'  # overrides the built in User model
 # https://docs.djangoproject.com/en/2.0/topics/auth/customizing/#substituting-a-custom-user-model
 
 # Database
