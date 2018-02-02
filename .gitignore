@@ -1,0 +1,4 @@
+*.pyc
+conflusion-mt/
+Pipfile*
+setings.py
