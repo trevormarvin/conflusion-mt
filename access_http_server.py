@@ -183,7 +183,7 @@ class handle_request(http.server.BaseHTTPRequestHandler):
         
     # count down for limited use cards
     if not carddobj.countdown is None:
-      carddobj.countdown -= 0
+      carddobj.countdown -= 1
       carddobj.save()
     
     # log the access
