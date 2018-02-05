@@ -15,7 +15,8 @@ system that are tentative or proposed are in separate "models_xxx.py" files.
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser  # for extending the auth table
-from django.contrib.auth.models import Group as AbstractGroup # mimicing above import
+from django.contrib.auth.models import Group
+
 
 # -------------------------------------------------
 # This class extends the 'auth_user' table provided by the Django auth package.
@@ -57,28 +58,6 @@ admin.site.register(User, UserAdmin)
 ...needs to be put in the "admin.py" file for overriding the User model.
 '''
 
-# -------------------------------------------------
-'''
-PROPOSED:  A member's membership level is stored in the Django 'Group' model,
-which is extended to handle some back-office accounting of such. -TM
-'''
-
-# extend the 'Group' model with some more fields
-class Group(AbstractGroup):
-  '''
-  https://docs.djangoproject.com/en/2.0/ref/contrib/auth/#group-model
-  
-  django.contrib.auth.models.Group already contains certain fields:
-  
-  name = models.CharField(max_length = 80)
-  permissions = ManyToManyField(Permission)
-  
-  '''
-  expire = models.DateField(null = True)
-  # expiration of this membership level
-  # (checking of the expiration date will need to be included into functions
-  # that determine 'Group' membership, or a separate process will need to
-  # regularly pass through the table and delete/disable all expired memberships)
 
 # -----------------------------------------------------------------------------
 # This add the "Certifications" schema
@@ -94,7 +73,7 @@ priveleges related to a particular membership level.
 '''
 
 class Certifications(models.Model):
-  index = models.AutoField(primary_key = True)
+  id = models.AutoField(primary_key = True)
   
   name = models.CharField(max_length = 50,
                           null = False,
@@ -155,7 +134,7 @@ This next table tracks the certifications that a particular user has.
 '''
 
 class Certified(models.Model):
-  index = models.AutoField(primary_key = True)
+  id = models.AutoField(primary_key = True)
   
   userid = models.ForeignKey(User,
                              on_delete = models.CASCADE,
@@ -203,7 +182,7 @@ This next logs individual accesses to a certified resource
 '''
 
 class CertAccessLog(models.Model):
-  index = models.AutoField(primary_key = True)
+  id = models.AutoField(primary_key = True)
   
   resource = models.ForeignKey(Certifications,
                                null = True,
@@ -244,7 +223,7 @@ cards, or anything else.
 '''
 
 class AccessCards(models.Model):
-  index = models.AutoField(primary_key = True)
+  id = models.AutoField(primary_key = True)
     
   cardid = models.CharField(max_length = 128,
                             null = False,
